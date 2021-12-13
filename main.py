@@ -27,10 +27,10 @@ class AdbInterface:
         self.device.shell('input tap {} {}'.format(coordinates[0], coordinates[1]))
     
     def send_swipe(self, coordinates):
-        self.device.shell('input swipe {} {} {} {}'.format(coordinates[0], coordinates[1], coordinates[2], coordinates[3]))
+        self.device.shell('input swipe {} {} {} {} 3000'.format(coordinates[0], coordinates[1], coordinates[2], coordinates[3]))
 
     def hold(self, coordinates):
-        self.device.shell('input swipe {} {} {} {}'.format(coordinates[0], coordinates[1], coordinates[0], coordinates[1]))
+        self.device.shell('input swipe {} {} {} {} 2000'.format(coordinates[0], coordinates[1], coordinates[0], coordinates[1]))
     
 class BaseBuilding:
     def __init__(self, name, level):
@@ -40,8 +40,9 @@ class BaseBuilding:
         self.constants = {
             'LEVEL_1': (1611, 360), # LEVEL 1 ITEM
             'LEVEL_2': (1611, 692), # WIP
-            'LEVEL_3': (1611, 999), # WIP
-            'LEVEL_4': (1328, 275), # WIP
+            'LEVEL_3': (1611, 984), # WIP
+            'LEVEL_4': (1611, 360), # WIP
+            'SWIPE_UP': (1552, 1053, 1552, 750),
             'NEXT': (1025, 525), # SHOWS NEXT PAGE
         }
 
@@ -55,16 +56,38 @@ class BaseBuilding:
         return self.purchase_item
 
     def do_purchase(self, adb):
+        if self.level == 'LEVEL_0':
+            pass
         if self.level in ('LEVEL_1', 'LEVEL_2', 'LEVEL_3'):
             adb.hold(self.constants[self.level])
             adb.send_touch(self.constants['NEXT'])  
-            time.sleep(3)
+            time.sleep(2)
+        elif self.level in ('LEVEL_4', 'LEVEL_5', 'LEVEL_6'):
+            adb.send_swipe(self.constants['SWIPE_UP'])
+            adb.hold(self.constants['LEVEL_3'])
+            adb.send_touch(self.constants['NEXT'])
+            time.sleep(2)
 
 adb = AdbInterface('127.0.0.1', 62001)
 adb.connect()
 device = adb.get_device()
 
-building_list = [BaseBuilding('Smithy', 'LEVEL_3'), BaseBuilding('Jammery', 'LEVEL_2')]
+building_list = [
+    BaseBuilding('Smithy', 'LEVEL_3'),
+    BaseBuilding('Smithy', 'LEVEL_4'), 
+    BaseBuilding('Jammery', 'LEVEL_2'),
+    BaseBuilding('Carpentry Shop', 'LEVEL_1'),
+    BaseBuilding('Bakery', 'LEVEL_1'),
+    BaseBuilding('Jampie Diner', 'LEVEL_1'),
+    BaseBuilding('Artisans Workshop', 'LEVEL_1'),
+    BaseBuilding('Lumberjacks Lodge', 'LEVEL_1'),
+    BaseBuilding('Lumberjacks Lodge', 'LEVEL_1'),
+    BaseBuilding('Jellybean Farm', 'LEVEL_1'),
+    BaseBuilding('Sugar Quarry', 'LEVEL_1'),
+    BaseBuilding('Sugar Quarry', 'LEVEL_1'),
+    BaseBuilding('Windmill', 'LEVEL_1'),
+    BaseBuilding('Jellyberry Orchard', 'LEVEL_1')
+]
 
 while True:
     for building in building_list:
